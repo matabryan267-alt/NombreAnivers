@@ -4,72 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Votación de Temas Oficiales</title>
-    <!-- Cargamos la librería oficial de Supabase mediante CDN de forma limpia -->
+    <!-- Fuente Moderna y Minimalista -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Cargamos la librería oficial de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --primary-color: #3b82f6;
-            --primary-hover: #2563eb;
-            --success-color: #10b981;
-            --border-color: #e2e8f0;
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
+            /* Fondo inspirado en la estética del video */
+            background: url('https://images.unsplash.com/photo-1542228262-3d663b306a53?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            box-sizing: border-box;
+            padding: 20px;
         }
 
+        /* Contenedor transparente (Glassmorphism) */
         .container {
             width: 100%;
-            max-width: 650px;
-            background: var(--card-bg);
-            padding: 35px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            position: relative;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
         }
 
-        h1 {
+        .header-section {
             text-align: center;
-            margin-top: 0;
-            font-size: 1.6rem;
-            color: #0f172a;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.95rem;
             margin-bottom: 30px;
         }
 
-        .poll-question {
-            font-size: 1.15rem;
+        h1 {
+            font-size: 2rem;
             font-weight: 600;
-            margin-bottom: 20px;
-            color: #1e293b;
-            text-align: center;
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 8px;
+            margin-bottom: 5px;
+            color: #fff;
+            /* Borde negro delgado y sombra para lectura */
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #fff;
+            font-weight: 400;
+            /* Borde negro delgado y sombra para lectura */
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .poll-question {
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #fff;
+            /* Borde negro delgado */
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
         .options-list {
             list-style: none;
-            padding: 0;
-            margin: 0 0 28px 0;
+            margin-bottom: 25px;
         }
 
         .option-item {
@@ -79,92 +86,106 @@
         .option-label {
             display: flex;
             align-items: center;
-            padding: 14px 18px;
-            border: 2px solid var(--border-color);
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            font-weight: 400;
+            font-size: 0.9rem;
+            background-color: transparent;
+            color: #fff;
+            /* Borde negro delgado para lectura en las opciones */
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
         .option-label:hover {
-            border-color: var(--primary-color);
-            background-color: rgba(59, 130, 246, 0.03);
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: #fff;
         }
 
         .option-label input[type="radio"] {
-            margin-right: 14px;
-            width: 19px;
-            height: 19px;
-            flex-shrink: 0;
-            accent-color: var(--primary-color);
+            margin-right: 15px;
+            width: 18px;
+            height: 18px;
+            accent-color: #fff;
+            cursor: pointer;
         }
 
         .option-label.selected {
-            border-color: var(--primary-color);
-            background-color: rgba(59, 130, 246, 0.08);
-            color: var(--primary-color);
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: #fff;
+            font-weight: 600;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
         }
 
+        /* Botón sólido redondeado igual al video */
         .btn {
             display: block;
             width: 100%;
-            padding: 14px;
-            background-color: var(--primary-color);
-            color: white;
+            padding: 15px;
+            background-color: #fff;
+            color: #000;
             border: none;
-            border-radius: 10px;
+            border-radius: 30px; 
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .btn:hover {
-            background-color: var(--primary-hover);
+            background-color: #e2e8f0;
+            transform: translateY(-2px);
         }
 
         .btn:disabled {
-            background-color: #cbd5e1;
-            color: #94a3b8;
+            background-color: rgba(255, 255, 255, 0.4);
+            color: rgba(0, 0, 0, 0.8);
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .message {
             display: none;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 15px;
             text-align: center;
             font-weight: 500;
             line-height: 1.5;
-        }
-
-        .message.success {
-            background-color: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            /* Borde negro en mensaje de éxito */
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
         .admin-floating-btn {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #1e293b;
-            color: #f8fafc;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 18px;
+            border-radius: 50px;
             font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.2s;
-            z-index: 9999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
         .admin-floating-btn:hover {
-            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         .results-section {
@@ -172,55 +193,73 @@
         }
 
         .result-row {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
 
         .result-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
             font-weight: 500;
-            font-size: 0.9rem;
+            color: #fff;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
         .progress-bar-bg {
-            background-color: #f1f5f9;
-            height: 14px;
-            border-radius: 7px;
+            background-color: rgba(255, 255, 255, 0.2);
+            height: 10px;
+            border-radius: 20px;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .progress-bar-fill {
-            background-color: var(--success-color);
+            background: #fff;
             height: 100%;
             width: 0%;
-            transition: width 0.6s ease;
+            border-radius: 20px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
         .total-badge {
             text-align: center;
             margin-bottom: 25px;
             font-size: 1rem;
-            background: #f1f5f9;
-            padding: 8px;
-            border-radius: 8px;
-            color: #475569;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 12px;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
         .back-btn {
-            background-color: #64748b;
-            margin-top: 15px;
+            background-color: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            margin-top: 25px;
+            box-shadow: none;
+            /* Le damos el borde negro al texto del botón transparente */
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        
         <!-- VISTA DE VOTACIÓN -->
         <div id="poll-view">
-            <h1>Elección de Tema Oficial</h1>
-            <p class="subtitle">Aniversario Iglesia Santuario de Dios. Tu voto es 100% privado.</p>
+            <div class="header-section">
+                <h1>Elección de Tema</h1>
+                <p class="subtitle">Iglesia Santuario de Dios (11° Aniversario)</p>
+            </div>
             
             <p class="poll-question">Selecciona la opción de tu preferencia:</p>
             
@@ -229,31 +268,31 @@
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_1">
-                            1. "11 años guardando su presencia y sostenibles por su gracia" (1 Sm 7:12)
+                            1. Guardando su presencia y sostenibles... (1 Sm 7:12)
                         </label>
                     </li>
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_2">
-                            2. 11 años Fuertes: "Ensanchando el Santuario para una nueva temporada" (Isaías 54:2)
+                            2. 11 años Fuertes: Ensanchando el Santuario... (Is 54:2)
                         </label>
                     </li>
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_3">
-                            3. "Profundizando raíces, multiplicando el fruto" (Jn 15:5)
+                            3. Profundizando raíces, multiplicando el fruto (Jn 15:5)
                         </label>
                     </li>
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_4">
-                            4. "Santuario de Dios: Luz, esperanza y refugio para Cumaná" (Hch 5:14)
+                            4. Santuario de Dios: Luz, esperanza y refugio (Hch 5:14)
                         </label>
                     </li>
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_5">
-                            5. "11 Años Sostenidos por su Gracia" (1ª Samuel 7:12)
+                            5. 11 Años Sostenidos por su Gracia (1 Sm 7:12)
                         </label>
                     </li>
                     <li class="option-item">
@@ -265,65 +304,75 @@
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_7">
-                            7. "Ebenezer" // 11 años de fidelidad y Gracia
+                            7. Ebenezer // 11 años de fidelidad y Gracia
                         </label>
                     </li>
                     <li class="option-item">
                         <label class="option-label">
                             <input type="radio" name="poll-option" value="opcion_8">
-                            8. "11 Principios de Testimonio y Amor inquebrantable"
+                            8. 11 Principios de Testimonio y Amor inquebrantable
                         </label>
                     </li>
                 </ul>
                 
-                <button type="submit" class="btn" id="submit-btn" disabled>Enviar Voto</button>
+                <button type="submit" class="btn" id="submit-btn" disabled>Confirmar y Votar</button>
             </form>
         </div>
 
         <!-- PANTALLA DE ÉXITO -->
-        <div id="success-view" class="message success">
+        <div id="success-view" class="message">
+            <svg style="width:50px;height:50px;margin-bottom:15px;filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg><br>
             <strong>¡Voto registrado con éxito!</strong><br>
-            Tu opinión ha sido procesada de manera confidencial en la base de datos. ¡Gracias por participar!
+            Tu elección se ha computado de manera segura en el sistema.
         </div>
 
         <!-- PANEL DE CONTROL DEL ADMINISTRADOR -->
         <div id="results-view" class="results-section">
-            <h1>Resultados en Tiempo Real</h1>
-            <p class="subtitle">Tendencias protegidas (Solo visible para ti)</p>
+            <div class="header-section">
+                <h1>Resultados en Vivo</h1>
+                <p class="subtitle">Monitoreo de tendencias (Vista Segura)</p>
+            </div>
             
             <div class="total-badge">
-                Total de votos registrados: <strong id="total-votes-count">0</strong>
+                Votos Totales: <strong id="total-votes-count">0</strong>
             </div>
 
             <div id="results-container"></div>
 
-            <button class="btn back-btn" id="close-admin-btn">Cerrar Panel</button>
+            <button class="btn back-btn" id="close-admin-btn">Volver Atrás</button>
         </div>
 
     </div>
 
     <!-- BOTÓN DE ACCESO PRIVADO FLOTANTE -->
-    <button class="admin-floating-btn" id="admin-trigger">👁️ Ver Votos</button>
+    <button class="admin-floating-btn" id="admin-trigger">
+        <svg style="width:16px;height:16px; filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+        Panel
+    </button>
 
     <script>
         // --- CONFIGURACIÓN DE VINCULACIÓN ---
         const MI_CONTRASENA = "miClave77"; 
         const SUPABASE_URL = "https://vlqfdlzezoifbnvzwkrb.supabase.co";
-        const SUPABASE_KEY = "PEGA_AQUÍ_TU_CLAVE_ANON_PUBLIC"; // <-- Reemplaza esto con tu clave anon/public larga
+        // API key correcta incrustada
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZscWZkbHplem9pZmJudnp3a3JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5ODUzNTksImV4cCI6MjA5OTU2MTM1OX0.OBf3m7bmKsd-XblDm4vTqOtRTD5E5vGAwprJbJ-EaDI";
 
-        // Inicializar el cliente Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Nombres formateados para las barras de resultados del administrador
         const nombresOpciones = {
-            "opcion_1": "1. Guardando su presencia (1 Sm 7:12)",
-            "opcion_2": "2. 11 años Fuertes (Is 54:2)",
-            "opcion_3": "3. Profundizando raíces (Jn 15:5)",
-            "opcion_4": "4. Luz, esperanza y refugio (Hch 5:14)",
-            "opcion_5": "5. Sostenidos por su Gracia (1 Sm 7:12)",
+            "opcion_1": "1. Guardando su presencia",
+            "opcion_2": "2. Ensanchando el Santuario",
+            "opcion_3": "3. Profundizando raíces",
+            "opcion_4": "4. Luz, esperanza y refugio",
+            "opcion_5": "5. Sostenidos por su Gracia",
             "opcion_6": "6. Puerta del cielo",
-            "opcion_7": "7. Ebenezer // Fidelidad y Gracia",
-            "opcion_8": "8. 11 Principios de Testimonio"
+            "opcion_7": "7. Ebenezer (Fidelidad)",
+            "opcion_8": "8. Principios de Testimonio"
         };
 
         const form = document.getElementById('poll-form');
@@ -350,18 +399,17 @@
             });
         });
 
-        // ENVIAR VOTO A SUPABASE CON VENTANA DE CONFIRMACIÓN
+        // ENVIAR VOTO A SUPABASE
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const selected = document.querySelector('input[name="poll-option"]:checked');
             if (!selected) return;
 
-            // Ventana de confirmación estricta
-            const seguro = confirm("¿Estás completamente seguro de tu elección? Tu voto se sumará de forma anónima.");
+            const seguro = confirm("¿Estás seguro de tu elección? Tu voto se sumará anónimamente.");
             if (!seguro) return;
 
             if (sessionStorage.getItem('voted_block')) {
-                alert('Ya registraste un voto desde esta sesión.');
+                alert('Ya registraste un voto en esta sesión.');
                 return;
             }
 
@@ -369,30 +417,44 @@
             submitBtn.innerText = "Procesando...";
 
             try {
-                // Recuperar la fila de control actual
-                let { data: fila, error } = await supabaseClient.from('encuesta_temas').select('*').eq('id', 1).single();
+                const { data: fila, error: fetchError } = await supabaseClient
+                    .from('encuesta_temas')
+                    .select('*')
+                    .eq('id', 1)
+                    .single();
                 
+                if (fetchError) throw fetchError;
+
                 if (fila) {
                     let nuevoValor = (fila[selected.value] || 0) + 1;
                     
-                    // Actualizar sumando +1 a la columna correspondiente
-                    await supabaseClient
+                    const { error: updateError } = await supabaseClient
                         .from('encuesta_temas')
                         .update({ [selected.value]: nuevoValor })
                         .eq('id', 1);
 
+                    if (updateError) throw updateError;
+
                     sessionStorage.setItem('voted_block', 'true');
                     pollView.style.display = 'none';
                     successView.style.display = 'block';
+                } else {
+                    alert("No se encontró el registro inicial con ID 1 en la base de datos.");
+                    resetBtn();
                 }
             } catch (err) {
-                alert("Hubo un error de conexión al registrar tu voto. Inténtalo de nuevo.");
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Enviar Voto";
+                console.error(err);
+                alert("Error de comunicación: " + (err.message || "Error desconocido."));
+                resetBtn();
             }
         });
 
-        // CONTROL Y RENDERING DEL PANEL ADMINISTRATIVO PRIVADO
+        function resetBtn() {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Confirmar y Votar";
+        }
+
+        // PANEL DE ADMINISTRADOR
         adminTrigger.addEventListener('click', async () => {
             const claveIngresada = prompt("Contraseña de administrador:");
             if (claveIngresada === MI_CONTRASENA) {
@@ -400,16 +462,17 @@
                 successView.style.display = 'none';
                 resultsView.style.display = 'block';
                 
-                resultsContainer.innerHTML = "<p style='text-align:center;'>Descargando votos en tiempo real de Supabase...</p>";
-                await renderStatsFromSupabase();
+                resultsContainer.innerHTML = "<p style='text-align:center; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;'>Descargando datos...</p>";
+                await renderStats();
             } else if (claveIngresada !== null) {
-                alert("Contraseña incorrecta. Acceso denegado.");
+                alert("Contraseña incorrecta.");
             }
         });
 
-        async function renderStatsFromSupabase() {
+        async function renderStats() {
             try {
-                let { data: fila } = await supabaseClient.from('encuesta_temas').select('*').eq('id', 1).single();
+                let { data: fila, error } = await supabaseClient.from('encuesta_temas').select('*').eq('id', 1).single();
+                if (error) throw error;
                 if (!fila) return;
 
                 let total = 0;
@@ -428,16 +491,21 @@
                     row.innerHTML = `
                         <div class="result-info">
                             <span>${nombresOpciones[key]}</span>
-                            <span>${votos} votos (${porcentaje}%)</span>
+                            <span>${votos} v (${porcentaje}%)</span>
                         </div>
                         <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: ${porcentaje}%"></div>
+                            <div class="progress-bar-fill" style="width: 0%"></div>
                         </div>
                     `;
                     resultsContainer.appendChild(row);
+                    
+                    setTimeout(() => {
+                        const fill = row.querySelector('.progress-bar-fill');
+                        if(fill) fill.style.width = `${porcentaje}%`;
+                    }, 50);
                 }
             } catch (error) {
-                resultsContainer.innerHTML = "<p style='color:red; text-align:center;'>Error al obtener las estadísticas desde Supabase.</p>";
+                resultsContainer.innerHTML = "<p style='text-align:center; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;'>Error al obtener estadísticas.</p>";
             }
         }
 

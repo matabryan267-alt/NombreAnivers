@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votación de Temas Oficiales</title>
+    <!-- Cargamos la librería oficial de Supabase mediante CDN de forma limpia -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .poll-question {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+            text-align: center;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 28px 0;
+        }
+
+        .option-item {
+            margin-bottom: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.03);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 14px;
+            width: 19px;
+            height: 19px;
+            flex-shrink: 0;
+            accent-color: var(--primary-color);
+        }
+
+        .option-label.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.08);
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            background-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .message.success {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .admin-floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            z-index: 9999;
+        }
+
+        .admin-floating-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .result-row {
+            margin-bottom: 18px;
+        }
+
+        .result-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-bg {
+            background-color: #f1f5f9;
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--success-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.6s ease;
+        }
+
+        .total-badge {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1rem;
+            background: #f1f5f9;
+            padding: 8px;
+            border-radius: 8px;
+            color: #475569;
+        }
+
+        .back-btn {
+            background-color: #64748b;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- VISTA DE VOTACIÓN -->
+        <div id="poll-view">
+            <h1>Elección de Tema Oficial</h1>
+            <p class="subtitle">Aniversario Iglesia Santuario de Dios. Tu voto es 100% privado.</p>
+            
+            <p class="poll-question">Selecciona la opción de tu preferencia:</p>
+            
+            <form id="poll-form">
+                <ul class="options-list">
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_1">
+                            1. "11 años guardando su presencia y sostenibles por su gracia" (1 Sm 7:12)
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_2">
+                            2. 11 años Fuertes: "Ensanchando el Santuario para una nueva temporada" (Isaías 54:2)
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_3">
+                            3. "Profundizando raíces, multiplicando el fruto" (Jn 15:5)
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_4">
+                            4. "Santuario de Dios: Luz, esperanza y refugio para Cumaná" (Hch 5:14)
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_5">
+                            5. "11 Años Sostenidos por su Gracia" (1ª Samuel 7:12)
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_6">
+                            6. Santuario de Dios: Puerta del cielo
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_7">
+                            7. "Ebenezer" // 11 años de fidelidad y Gracia
+                        </label>
+                    </li>
+                    <li class="option-item">
+                        <label class="option-label">
+                            <input type="radio" name="poll-option" value="opcion_8">
+                            8. "11 Principios de Testimonio y Amor inquebrantable"
+                        </label>
+                    </li>
+                </ul>
+                
+                <button type="submit" class="btn" id="submit-btn" disabled>Enviar Voto</button>
+            </form>
+        </div>
+
+        <!-- PANTALLA DE ÉXITO -->
+        <div id="success-view" class="message success">
+            <strong>¡Voto registrado con éxito!</strong><br>
+            Tu opinión ha sido procesada de manera confidencial en la base de datos. ¡Gracias por participar!
+        </div>
+
+        <!-- PANEL DE CONTROL DEL ADMINISTRADOR -->
+        <div id="results-view" class="results-section">
+            <h1>Resultados en Tiempo Real</h1>
+            <p class="subtitle">Tendencias protegidas (Solo visible para ti)</p>
+            
+            <div class="total-badge">
+                Total de votos registrados: <strong id="total-votes-count">0</strong>
+            </div>
+
+            <div id="results-container"></div>
+
+            <button class="btn back-btn" id="close-admin-btn">Cerrar Panel</button>
+        </div>
+
+    </div>
+
+    <!-- BOTÓN DE ACCESO PRIVADO FLOTANTE -->
+    <button class="admin-floating-btn" id="admin-trigger">👁️ Ver Votos</button>
+
+    <script>
+        // --- CONFIGURACIÓN DE VINCULACIÓN ---
+        const MI_CONTRASENA = "miClave77"; 
+        const SUPABASE_URL = "https://vlqfdlzezoifbnvzwkrb.supabase.co";
+        const SUPABASE_KEY = "PEGA_AQUÍ_TU_CLAVE_ANON_PUBLIC"; // <-- Reemplaza esto con tu clave anon/public larga
+
+        // Inicializar el cliente Supabase
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Nombres formateados para las barras de resultados del administrador
+        const nombresOpciones = {
+            "opcion_1": "1. Guardando su presencia (1 Sm 7:12)",
+            "opcion_2": "2. 11 años Fuertes (Is 54:2)",
+            "opcion_3": "3. Profundizando raíces (Jn 15:5)",
+            "opcion_4": "4. Luz, esperanza y refugio (Hch 5:14)",
+            "opcion_5": "5. Sostenidos por su Gracia (1 Sm 7:12)",
+            "opcion_6": "6. Puerta del cielo",
+            "opcion_7": "7. Ebenezer // Fidelidad y Gracia",
+            "opcion_8": "8. 11 Principios de Testimonio"
+        };
+
+        const form = document.getElementById('poll-form');
+        const radioButtons = document.querySelectorAll('input[name="poll-option"]');
+        const submitBtn = document.getElementById('submit-btn');
+        const labels = document.querySelectorAll('.option-label');
+        
+        const pollView = document.getElementById('poll-view');
+        const successView = document.getElementById('success-view');
+        const resultsView = document.getElementById('results-view');
+        
+        const adminTrigger = document.getElementById('admin-trigger');
+        const closeAdminBtn = document.getElementById('close-admin-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const totalVotesCount = document.getElementById('total-votes-count');
+
+        radioButtons.forEach((radio, index) => {
+            radio.addEventListener('change', () => {
+                labels.forEach(l => l.classList.remove('selected'));
+                if (radio.checked) {
+                    labels[index].classList.add('selected');
+                    submitBtn.disabled = false;
+                }
+            });
+        });
+
+        // ENVIAR VOTO A SUPABASE CON VENTANA DE CONFIRMACIÓN
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const selected = document.querySelector('input[name="poll-option"]:checked');
+            if (!selected) return;
+
+            // Ventana de confirmación estricta
+            const seguro = confirm("¿Estás completamente seguro de tu elección? Tu voto se sumará de forma anónima.");
+            if (!seguro) return;
+
+            if (sessionStorage.getItem('voted_block')) {
+                alert('Ya registraste un voto desde esta sesión.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Procesando...";
+
+            try {
+                // Recuperar la fila de control actual
+                let { data: fila, error } = await supabaseClient.from('encuesta_temas').select('*').eq('id', 1).single();
+                
+                if (fila) {
+                    let nuevoValor = (fila[selected.value] || 0) + 1;
+                    
+                    // Actualizar sumando +1 a la columna correspondiente
+                    await supabaseClient
+                        .from('encuesta_temas')
+                        .update({ [selected.value]: nuevoValor })
+                        .eq('id', 1);
+
+                    sessionStorage.setItem('voted_block', 'true');
+                    pollView.style.display = 'none';
+                    successView.style.display = 'block';
+                }
+            } catch (err) {
+                alert("Hubo un error de conexión al registrar tu voto. Inténtalo de nuevo.");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Enviar Voto";
+            }
+        });
+
+        // CONTROL Y RENDERING DEL PANEL ADMINISTRATIVO PRIVADO
+        adminTrigger.addEventListener('click', async () => {
+            const claveIngresada = prompt("Contraseña de administrador:");
+            if (claveIngresada === MI_CONTRASENA) {
+                pollView.style.display = 'none';
+                successView.style.display = 'none';
+                resultsView.style.display = 'block';
+                
+                resultsContainer.innerHTML = "<p style='text-align:center;'>Descargando votos en tiempo real de Supabase...</p>";
+                await renderStatsFromSupabase();
+            } else if (claveIngresada !== null) {
+                alert("Contraseña incorrecta. Acceso denegado.");
+            }
+        });
+
+        async function renderStatsFromSupabase() {
+            try {
+                let { data: fila } = await supabaseClient.from('encuesta_temas').select('*').eq('id', 1).single();
+                if (!fila) return;
+
+                let total = 0;
+                for (const key in nombresOpciones) {
+                    total += (fila[key] || 0);
+                }
+                totalVotesCount.innerText = total;
+                resultsContainer.innerHTML = '';
+
+                for (const key in nombresOpciones) {
+                    const votos = fila[key] || 0;
+                    const porcentaje = total > 0 ? Math.round((votos / total) * 100) : 0;
+
+                    const row = document.createElement('div');
+                    row.className = 'result-row';
+                    row.innerHTML = `
+                        <div class="result-info">
+                            <span>${nombresOpciones[key]}</span>
+                            <span>${votos} votos (${porcentaje}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${porcentaje}%"></div>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(row);
+                }
+            } catch (error) {
+                resultsContainer.innerHTML = "<p style='color:red; text-align:center;'>Error al obtener las estadísticas desde Supabase.</p>";
+            }
+        }
+
+        closeAdminBtn.addEventListener('click', () => {
+            resultsView.style.display = 'none';
+            if (sessionStorage.getItem('voted_block')) {
+                successView.style.display = 'block';
+            } else {
+                pollView.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
